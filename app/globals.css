@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* Geist covers Latin only. The Chinese page therefore borrows the platform's
+       own CJK face — PingFang on Apple, YaHei on Windows, Noto CJK on
+       Android/Linux. A CJK webfont would cost megabytes per weight, which is why
+       essentially every Chinese site uses a system stack instead. Without these
+       fallbacks the Chinese text renders as tofu boxes wherever the browser's
+       generic sans-serif has no CJK coverage. */
+    --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+      "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
+    --font-sans: var(--font-heading);
+    --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
+      "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei",
+      monospace;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+
+    /* Elevation + data-viz tokens. The three data colors below were run through
+       the dataviz validator in both modes; see README "Data colours". */
+    --color-surface-2: var(--surface-2);
+    --color-ink-muted: var(--ink-muted);
+    --color-data: var(--data);
+    --color-data-ink: var(--data-ink);
+    --color-deemphasis: var(--deemphasis);
+    --color-good: var(--good);
+    --color-warning: var(--warning);
+    --color-critical: var(--critical);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    --background: #f6f8fa;
+    --foreground: #0a0f16;
+    --card: #ffffff;
+    --card-foreground: #0a0f16;
+    --surface-2: #ffffff;
+    --popover: #ffffff;
+    --popover-foreground: #0a0f16;
+    --primary: #0a0f16;
+    --primary-foreground: #ffffff;
+    --secondary: #eceff3;
+    --secondary-foreground: #0a0f16;
+    --muted: #eceff3;
+    --muted-foreground: #475569;
+    --ink-muted: #6b7885;
+    --accent: #eceff3;
+    --accent-foreground: #0a0f16;
+    --destructive: #d03b3b;
+    --border: rgba(10, 15, 22, 0.10);
+    --input: rgba(10, 15, 22, 0.14);
+    --ring: #0891b2;
+
+    /* Data colours — validated against surface #ffffff */
+    --data: #0891b2;
+    --data-ink: #0e7490;
+    --deemphasis: #64748b;
+
+    /* Status — reserved, never reused as a series colour */
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+
+    --chart-1: #0891b2;
+    --chart-2: #7c3aed;
+    --chart-3: #64748b;
+    --chart-4: #0e7490;
+    --chart-5: #94a3b8;
+
+    --radius: 0.625rem;
+    --sidebar: #f6f8fa;
+    --sidebar-foreground: #0a0f16;
+    --sidebar-primary: #0a0f16;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eceff3;
+    --sidebar-accent-foreground: #0a0f16;
+    --sidebar-border: rgba(10, 15, 22, 0.10);
+    --sidebar-ring: #0891b2;
+}
+
+.dark {
+    --background: #080b10;
+    --foreground: #f2f6fa;
+    --card: #0b1015;
+    --card-foreground: #f2f6fa;
+    --surface-2: #10161d;
+    --popover: #10161d;
+    --popover-foreground: #f2f6fa;
+    --primary: #f2f6fa;
+    --primary-foreground: #080b10;
+    --secondary: #161d26;
+    --secondary-foreground: #f2f6fa;
+    --muted: #161d26;
+    --muted-foreground: #a9b6c5;
+    --ink-muted: #6f7d8c;
+    --accent: #161d26;
+    --accent-foreground: #f2f6fa;
+    --destructive: #d03b3b;
+    --border: rgba(255, 255, 255, 0.09);
+    --input: rgba(255, 255, 255, 0.14);
+    --ring: #0891b2;
+
+    /* Data colours — validated against surface #0b1015 */
+    --data: #0891b2;
+    --data-ink: #22d3ee;
+    --deemphasis: #7d8998;
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+
+    --chart-1: #0891b2;
+    --chart-2: #8b5cf6;
+    --chart-3: #7d8998;
+    --chart-4: #22d3ee;
+    --chart-5: #94a3b8;
+
+    --sidebar: #0b1015;
+    --sidebar-foreground: #f2f6fa;
+    --sidebar-primary: #f2f6fa;
+    --sidebar-primary-foreground: #080b10;
+    --sidebar-accent: #161d26;
+    --sidebar-accent-foreground: #f2f6fa;
+    --sidebar-border: rgba(255, 255, 255, 0.09);
+    --sidebar-ring: #0891b2;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+  html {
+    @apply font-sans;
+    }
+  /* Anchor scrolling clears the sticky header. */
+  html {
+    scroll-padding-top: 5rem;
+    }
+}
+
+@layer components {
+  /* Hairline perspective grid.
+     A fixed-position element rather than `background-attachment: fixed`, which
+     causes scroll jank on mobile Safari. Painted once, no JS, no images. */
+  .bg-grid {
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        color-mix(in srgb, var(--data) 7%, transparent) 0 1px,
+        transparent 1px 48px
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--data) 7%, transparent) 0 1px,
+        transparent 1px 48px
+      );
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+  }
+
+  /* Single static radial gradient — deliberately no `filter: blur()`, which is
+     one of the most expensive things to composite on a mid-range phone. */
+  .bg-glow {
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--data) 20%, transparent) 0%,
+      transparent 65%
+    );
+  }
+
+  /* Magnitude bar used in the comparison table. Thin mark, 4px rounded
+     data-end, square at the baseline, growing from a single baseline. */
+  .bar-track {
+    background-color: color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
