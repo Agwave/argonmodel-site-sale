@@ -7,7 +7,7 @@ import { element, site } from "@/config/site";
 import { contactEmail } from "@/lib/env";
 import { localeTags, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { displayPrice, formatNative } from "@/lib/format";
+import { displayCurrencyFor, displayPrice, formatNative } from "@/lib/format";
 import type { FxRate } from "@/lib/fx";
 
 export function Hero({
@@ -54,7 +54,11 @@ export function Hero({
 
             <div className="mt-10">
               <p className="font-mono text-xs tracking-[0.12em] text-ink-muted uppercase">
-                {dict.hero.priceLabel}
+                {/* The label names the currency being *displayed* — the Chinese
+                    page shows a CNY conversion even though the ask is in USD. */}
+                {dict.hero.priceLabel(
+                  dict.hero.currencyNames[displayCurrencyFor(locale)],
+                )}
               </p>
 
               {price ? (

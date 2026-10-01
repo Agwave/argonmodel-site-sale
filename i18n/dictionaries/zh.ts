@@ -27,7 +27,8 @@ export const zh: Dictionary = {
   hero: {
     eyebrow: "精品域名 · 正在出售",
     subhead: "两个词典单词，一个明确的含义——AI 时代的 model 层。",
-    priceLabel: "报价 · 美元",
+    priceLabel: (currencyLabel) => `报价 · ${currencyLabel}`,
+    currencyNames: { USD: "美元", CNY: "人民币" },
     priceOnRequest: "价格面议",
     statusNote: {
       tbd: "暂无公开报价 — 欢迎出价",

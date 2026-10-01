@@ -34,7 +34,14 @@ export interface Dictionary {
   hero: {
     eyebrow: string;
     subhead: string;
-    priceLabel: string;
+    /**
+     * Labels the currency the locale *displays*, which is not necessarily the
+     * currency the ask is quoted in — the Chinese page shows a CNY conversion of
+     * a USD price. Takes the label from `currencyNames` so the two cannot drift.
+     */
+    priceLabel: (currencyLabel: string) => string;
+    /** Display names for the two display currencies, per locale. */
+    currencyNames: Record<"USD" | "CNY", string>;
     priceOnRequest: string;
     /** Shown next to the number so the status can never be separated from it. */
     statusNote: {
@@ -164,7 +171,8 @@ export const en: Dictionary = {
     eyebrow: "Premium domain name · Available for acquisition",
     subhead:
       "Two dictionary words. One unmistakable meaning — the model layer of the AI era.",
-    priceLabel: "Asking price · USD",
+    priceLabel: (currencyLabel) => `Asking price · ${currencyLabel}`,
+    currencyNames: { USD: "USD", CNY: "CNY" },
     priceOnRequest: "Price on request",
     statusNote: {
       tbd: "No public price — send an offer",
