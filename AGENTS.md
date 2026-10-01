@@ -118,3 +118,13 @@ pnpm build     # 2. 类型检查 + 静态生成（会自动先跑 pnpm check-pri
   别删。新增 env 模板文件时记得同样加例外。
 - **邮箱等个人信息一律走环境变量，不进仓库。** 已做历史重写，git 历史里不应出现真实邮箱；
   提交前用 `git ls-files -z | xargs -0 grep -nIoE '[\w.+-]+@[\w.-]+'` 自查一遍。
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
