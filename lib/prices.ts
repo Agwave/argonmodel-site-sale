@@ -35,7 +35,29 @@ export type LivePrice = {
 /** Domain → live price. Domains that failed simply are not present. */
 export type LivePriceMap = Record<string, LivePrice>;
 
+/**
+ * Module-level memo.
+ *
+ * In production the fetch's own `revalidate` window handles caching. In dev
+ * there is no such cache, so without this every single page load would re-run
+ * the whole spaced sequence — three requests 6s apart, i.e. ~12s per request,
+ * on every reload. The module persists between dev requests (until a file
+ * change triggers HMR), so the cost is paid once.
+ */
+const CACHE_TTL_MS = 10 * 60 * 1000;
+let memo: { at: number; value: LivePriceMap } | null = null;
+
 export async function fetchLivePrices(): Promise<LivePriceMap> {
+  if (memo && Date.now() - memo.at < CACHE_TTL_MS) {
+    return memo.value;
+  }
+
+  const value = await loadAllPrices();
+  memo = { at: Date.now(), value };
+  return value;
+}
+
+async function loadAllPrices(): Promise<LivePriceMap> {
   const targets = comparables.filter(
     (entry): entry is typeof entry & { liveQuery: string } =>
       typeof entry.liveQuery === "string",
