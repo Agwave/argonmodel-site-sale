@@ -258,51 +258,95 @@ pnpm dlx vercel --prod # production
 the build stops without it. `SITE_URL` is optional and defaults to
 `https://argonmodel.com`.
 
-### 2. Domain
+### 2. Domain and DNS
 
-`argonmodel.com` is registered through Alibaba Cloud / HiChina and is on
-`status: active` (real-name verification is complete), but it still has **no DNS
-records** — its nameservers are still HiChina's defaults. Point it at Vercel
-before expecting it to resolve.
+`argonmodel.com` is registered through Alibaba Cloud / HiChina. **The shipped
+configuration is a direct connection to Vercel, with no Cloudflare in front:**
 
-Changing nameservers is done at the registrar. If you keep HiChina's nameservers,
-add Vercel's records there; the exact values are shown on Vercel's domain card —
-**use those, not values from older guides**, since the A record address varies
-per project now.
+| Record | Type | Value | Proxy |
+|---|---|---|---|
+| `@` | CNAME | the target on Vercel's domain card | DNS only |
+| `www` | CNAME | same | DNS only |
 
-### 3. Cloudflare
+On Vercel, the **apex is set as the primary domain** and `www` uses "Redirect to"
+to point at it.
 
-Vercel's own guidance is that a reverse proxy in front of it (Cloudflare's orange
-cloud) costs ~20ms per request in double TLS termination, degrades Vercel's bot
-detection and traffic visibility, and makes Vercel's dashboard show a permanent
-"Invalid Configuration". **Grey cloud (DNS-only) is the low-risk setup** — Vercel's
-edge is already a global CDN.
+> **Use the values Vercel's domain card shows** — they vary per project now; do
+> not copy older guides. Vercel recommends a CNAME rather than an A record: DNS
+> rules forbid CNAME at the apex, but Cloudflare supports **apex CNAME
+> flattening**, so a CNAME works there too.
 
-If you do want Cloudflare's CDN/WAF in front, the order matters:
+**Why the apex is primary rather than Vercel's recommended `www`:** Vercel's
+reasoning is that the apex can't use a CNAME and would need DNS edits if the IP
+changed. This project's apex *does* use a flattened CNAME, so that reason does
+not apply. Meanwhile `canonical`, `hreflang` and the sitemap all declare the apex
+canonical — making `www` primary would leave the canonical pointing somewhere the
+site does not actually serve from.
 
-1. Add the domain in Vercel and copy the DNS records it shows.
-2. Keep the record **grey-clouded (DNS-only)** so Vercel can complete its ACME
-   challenge and issue the certificate.
-3. Wait until Vercel reports the domain as **Valid Configuration**.
-4. Only then switch the record to **proxied (orange cloud)**.
-5. Set Cloudflare SSL/TLS to **Full (Strict)** — *never* Flexible, which causes
-   redirect loops. Vercel's origin certificate is already trusted by Cloudflare,
-   so no manual origin cert is needed.
-6. Enable "Always Use HTTPS" at the edge.
+### 3. About Cloudflare: a wrong turn worth recording
 
-Keep DNS verification TXT records and MX records grey-clouded — Cloudflare does
-not proxy mail and a verifier needs the raw record.
+While deploying, `*.vercel.app` preview URLs turned out to be **DNS-poisoned** in
+mainland China — `vercel.app` and every subdomain resolve to Facebook IP ranges
+(`157.240.2.x` / `2a03:2880:…:face:b00c:…`). From that I concluded Cloudflare was
+*required* for Chinese visitors.
+
+**That conclusion was wrong.** What the measurements actually showed:
+
+| Path | Result |
+|---|---|
+| `*.vercel.app` preview URL | ✗ DNS-poisoned (this part is real) |
+| **Custom domain, direct to Vercel** | **✓ works, no proxy needed** |
+| Through Cloudflare (orange cloud) | ✓ works, but ~0.1s slower (`cf-ray` showed routing via Los Angeles) |
+
+The mistake was **experimental design**: every SNI used to test "are Vercel's IPs
+reachable" was a domain Vercel does not serve (`example.com`, and `argonmodel.com`
+*before* it was bound). The variable never changed, yet a constant failure was read
+as "the IPs are blocked". The real cause is that **Vercel refuses unconfigured
+SNIs** — normal behaviour, not censorship.
+
+**And the orange cloud buys this site almost no CDN benefit:** the response carries
+`cf-cache-status: DYNAMIC` (Vercel's `cache-control` tells Cloudflare not to cache),
+so the real caching happens at Vercel's edge (`x-vercel-cache: HIT`). What remains
+is WAF, DDoS protection, and hiding the origin IP.
+
+**When Cloudflare genuinely is needed:** if Vercel's IPs become actually blocked in
+mainland China — which has happened repeatedly over the years, though not in this
+round of testing. In that case: keep the record grey-clouded so Vercel can complete
+its ACME challenge and issue the certificate → wait for **Valid Configuration** →
+only then switch to the orange cloud → set SSL/TLS to **Full (Strict)**
+(*never* Flexible, which causes redirect loops). Keep verification TXT and MX
+records grey-clouded — Cloudflare does not proxy mail.
+
+### Redirect status codes: why both 307 and 308
+
+This repo uses both. That is not an inconsistency — the two redirects differ in
+kind:
+
+| Redirect | Depends on | Code | Why |
+|---|---|---|---|
+| `www` → apex (configured in Vercel) | Host only — **every visitor goes to the same place** | **308** | A permanent structural redirect; search engines consolidate ranking signals on the target |
+| `/` → `/en` or `/zh` (`proxy.ts`) | `Accept-Language` — **visitors land differently** | **307** | With 308, the CDN or browser would permanently cache "`/` means `/en`", sending Chinese readers to the English page |
+
+### Two traps when debugging DNS
+
+- **The local DNS cache lies.** After changing a record, `getent hosts` /
+  `nslookup` may still return the old value. Confirm via DoH, which bypasses it:
+  `curl -sS -H "accept: application/dns-json" "https://doh.pub/dns-query?name=<domain>&type=A"`
+- **When testing whether an IP is reachable, the SNI must be the only variable.**
+  Probing with a domain the provider does not serve, and that is not yours, only
+  ever yields a constant failure. Test a custom domain with `curl --resolve`.
 
 ---
 
 ## Before you go live
 
-- [ ] Point `argonmodel.com`'s DNS at Vercel (see above) — it currently has none
-- [ ] Set `CONTACT_EMAIL` in the Vercel project settings (see above)
+- [x] `argonmodel.com` points at Vercel (direct, apex primary, `www` 308-redirects)
+- [x] `CONTACT_EMAIL` is set in Vercel and live
 - [x] `askingPrice` is set to `$888` (`indicative`)
+- [x] Live price fetching verified on Vercel (the page shows the `auto` tag)
 - [ ] Decide whether `$888` should be `indicative` or `firm` — the chip and the
       FAQ answer both derive from this, so it is a one-word change
-- [ ] Confirm the three comparable prices still look right on the live page; they
-      refresh automatically, but the `auto` tag tells you which came from the feed
+- [ ] Submit `https://argonmodel.com/sitemap.xml` to Google Search Console / Bing
+      so the new site gets indexed sooner
 - [ ] If you also list the domain on a marketplace, add it to `config/site.ts`;
       third-party proof of ownership is worth more than anything the page claims

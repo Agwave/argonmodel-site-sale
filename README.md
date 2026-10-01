@@ -217,42 +217,83 @@ pnpm dlx vercel --prod # 生产
 **首次部署前先在 Vercel 项目设置里配上 `CONTACT_EMAIL`**——缺它构建会中止。
 `SITE_URL` 可选，默认 `https://argonmodel.com`。
 
-### 2. 域名
+### 2. 域名与 DNS
 
-`argonmodel.com` 通过阿里云/万网注册，当前状态为 `active`（实名认证已完成），
-但仍然**没有任何 DNS 记录**——NS 还是万网的默认值。要先把它指向 Vercel，它才会解析。
+`argonmodel.com` 通过阿里云/万网注册。**最终采用的是直连 Vercel，不套 Cloudflare**：
 
-NS 变更在注册商处操作。若保留万网的 NS，就在那里添加 Vercel 的记录；
-**具体值以 Vercel 域名卡片上显示的为准**——A 记录的地址现在因项目而异，
-不要抄旧教程里的。
+| 记录 | 类型 | 值 | 代理 |
+|---|---|---|---|
+| `@` | CNAME | Vercel 域名卡片给出的目标 | DNS only |
+| `www` | CNAME | 同上 | DNS only |
 
-### 3. Cloudflare
+Vercel 侧把**根域名设为主域**，`www` 用 "Redirect to" 指向它。
 
-Vercel 官方明确不建议在它前面套反向代理（Cloudflare 橙云）：双重 TLS 终止带来约 20ms 延迟、
-削弱其 Bot 防护与流量可见性，并让面板持续显示 "Invalid Configuration"。
-**灰云（仅 DNS）是低风险方案**——Vercel 的边缘本身就是全球 CDN。
+> **记录值以 Vercel 域名卡片上显示的为准**——因项目而异，不要抄旧教程。
+> Vercel 现在推荐 CNAME 而非 A 记录：DNS 协议不允许根域名用 CNAME，
+> 但 Cloudflare 支持**根域名 CNAME 展平**，所以根域名也能用。
 
-如果确实要上 Cloudflare 的 CDN/WAF，顺序很重要：
+**为什么根域名作主域，而不是 Vercel 推荐的 www**：Vercel 的理由是「根域名不能用
+CNAME、换 IP 时要改 DNS」。但本项目的根域名用的正是 CNAME + 展平，
+这条理由不成立；反过来，`canonical` / `hreflang` / `sitemap` 都声明根域名为正主，
+若用 www 作主域，会出现「canonical 指向根域名、实际却从 www 提供服务」的自相矛盾。
 
-1. 在 Vercel 添加域名，复制它显示的 DNS 记录。
-2. 记录先保持**灰云（仅 DNS）**，让 Vercel 能完成 ACME 校验并签发证书。
-3. 等 Vercel 把域名标记为 **Valid Configuration**。
-4. 这时才把记录切为**橙云（代理）**。
-5. Cloudflare 的 SSL/TLS 设为 **Full (Strict)**——*绝不*用 Flexible，那会导致重定向循环。
-   Vercel 的源站证书已被 Cloudflare 信任，无需手动上传。
-6. 在边缘开启 "Always Use HTTPS"。
+### 3. 关于 Cloudflare：一条走错过的弯路
 
-DNS 校验用的 TXT 记录和 MX 记录请保持灰云——Cloudflare 不代理邮件，校验方需要拿到原始记录。
+部署时实测发现 `*.vercel.app` 预览地址在国内**被 DNS 污染**——`vercel.app`
+及其所有子域都解析到 Facebook 的 IP 段（`157.240.2.x` / `2a03:2880:…:face:b00c:…`）。
+据此我推断「必须用 Cloudflare 才能让国内访问」。
+
+**这个推断是错的。** 后续实测：
+
+| 路径 | 结果 |
+|---|---|
+| `*.vercel.app` 预览地址 | ✗ DNS 污染（这部分是真的） |
+| **自定义域名直连 Vercel** | **✓ 通，大陆无代理可访问** |
+| 经 Cloudflare 橙云 | ✓ 通，但慢约 0.1s（`cf-ray` 显示绕道洛杉矶） |
+
+错误出在**实验设计**：测试「Vercel 的 IP 是否可达」时，所有测试用的 SNI 都是
+Vercel 不认识的域名（`example.com`、以及当时**尚未绑定**的 `argonmodel.com`）。
+变量实际从未改变，却从一个恒定的失败里得出了「IP 被封」的结论。真实原因是
+**Vercel 会拒收未配置的 SNI**——这是它的正常行为，不是网络封锁。
+
+**而且橙云对本站几乎没有 CDN 收益**：响应头是 `cf-cache-status: DYNAMIC`
+（Vercel 发的 `cache-control` 让 Cloudflare 不缓存），真正的缓存发生在
+Vercel 边缘（`x-vercel-cache: HIT`）。橙云剩下的价值只有 WAF / DDoS / 隐藏源站 IP。
+
+**什么时候才真需要 Cloudflare**：如果 Vercel 的 IP 在国内出现实际阻断——历史上
+发生过多次，但本次实测没有。真需要时按此顺序：先灰云让 Vercel 完成 ACME 校验并签发证书
+→ 等 Vercel 显示 Valid Configuration → 再切橙云 → SSL/TLS 设为
+**Full (Strict)**（*绝不*用 Flexible，会导致重定向循环）。
+DNS 校验用的 TXT 记录和 MX 记录请始终保持灰云——Cloudflare 不代理邮件。
+
+### 重定向状态码：307 与 308 的分工
+
+本仓库同时用了这两个码，不是不一致，是**依据不同**：
+
+| 跳转 | 依据 | 码 | 原因 |
+|---|---|---|---|
+| `www` → 根域名（Vercel 配的） | 只看 Host，**所有访客去向相同** | **308** | 永久性结构跳转，搜索引擎据此合并权重 |
+| `/` → `/en` 或 `/zh`（`proxy.ts`） | 看 `Accept-Language`，**不同访客去向不同** | **307** | 若用 308，CDN/浏览器会永久缓存「`/` 该去 `/en`」，中文用户也会被送去英文页 |
+
+### 排查 DNS 时的两个坑
+
+- **本地 DNS 缓存会骗人。** 改完解析后 `getent hosts` / `nslookup` 可能仍返回旧值。
+  用 DoH 绕过本地缓存再确认：
+  `curl -sS -H "accept: application/dns-json" "https://doh.pub/dns-query?name=<域名>&type=A"`
+- **判断「某个 IP 是否可达」时必须让 SNI 成为唯一变量。** 用一个该服务商不认识、
+  且不属于你的域名去测，只会得到恒定的失败。测自定义域名要带上 `curl --resolve`。
 
 ---
 
 ## 上线前检查清单
 
-- [ ] 把 `argonmodel.com` 的 DNS 指向 Vercel（见上）——目前一条记录都没有
-- [ ] 在 Vercel 项目设置里配置 `CONTACT_EMAIL`（见上）
+- [x] `argonmodel.com` 已指向 Vercel（灰云直连，根域名为主域，`www` 308 跳转）
+- [x] `CONTACT_EMAIL` 已在 Vercel 配置并生效
 - [x] `askingPrice` 已设为 `$888`（`indicative`）
+- [x] 竞品价格实时抓取在 Vercel 上验证可用（页面显示 `auto` 标记）
 - [ ] 决定 `$888` 应该是 `indicative` 还是 `firm`——状态标记和 FAQ 答案都由它派生，
       改一个词即可
-- [ ] 确认上线后三个竞品价格仍然合理；它们会自动刷新，`auto` 标记能告诉你哪些来自接口
+- [ ] 在 Google Search Console / Bing 提交 `https://argonmodel.com/sitemap.xml`，
+      让新站被尽快收录
 - [ ] 如果你也在某个平台挂了售，把链接填进 `config/site.ts`；
       第三方的归属证明比页面上的任何自述都更有价值

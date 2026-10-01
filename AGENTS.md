@@ -85,6 +85,25 @@ pnpm build     # 2. 类型检查 + 静态生成（会自动先跑 pnpm check-pri
 | 无 JS 可用性 | 禁用 JS：hero 数字仍为最终值、FAQ 仍可展开、语言切换仍可用 |
 | 窄视口无横向滚动 | 320 / 360 / 390 / 414 宽度下 `window.scrollX` 必须恒为 0 |
 
+### 截图验证中文页时的一个陷阱
+
+本机 Docker/容器环境**不含任何 CJK 字体**（`fc-list` 里一个中文都没有），
+所以无头浏览器截中文页会满屏豆腐块。这**不代表页面有问题**——真机上系统字体会兜底。
+
+要截图验证时，需自备字体并注入：
+
+```bash
+# 从当前字典提取实际用到的汉字，向 Google Fonts 要一个只含这些字的子集
+node -e "const fs=require('fs');
+  const s=fs.readFileSync('i18n/dictionaries/zh.ts','utf8')+fs.readFileSync('i18n/dictionaries/en.ts','utf8');
+  fs.writeFileSync('/tmp/chars.txt',[...new Set(s.match(/[一-鿿]/g)||[])].join(''));"
+curl -sS "https://fonts.googleapis.com/css2?family=Noto+Sans+SC&text=$(node -e 'console.log(encodeURIComponent(require("fs").readFileSync("/tmp/chars.txt","utf8")))')" -o /tmp/gf.css
+# 再把 css 里的 woff2 抓下来转成 data URI，用 addStyleTag 注入
+```
+
+**关键：改过 `zh.ts` 文案后必须重新生成子集**，否则新出现的字会显示成方框，
+极容易被误判成"页面缺字"。这个坑导致过三次误判。
+
 ## 4. 本仓库的坑（改动前务必先读）
 
 这些都是实际踩过并已修复的，**不要"顺手改回去"**：
@@ -118,6 +137,19 @@ pnpm build     # 2. 类型检查 + 静态生成（会自动先跑 pnpm check-pri
   别删。新增 env 模板文件时记得同样加例外。
 - **邮箱等个人信息一律走环境变量，不进仓库。** 已做历史重写，git 历史里不应出现真实邮箱；
   提交前用 `git ls-files -z | xargs -0 grep -nIoE '[\w.+-]+@[\w.-]+'` 自查一遍。
+- **`proxy.ts` 用 307、域名跳转用 308，不要统一。** 语言跳转依赖 `Accept-Language`，
+  不同访客去向不同，用 308 会被永久缓存导致中文用户被送去英文页；`www → 根域名`
+  只看 Host，所有访客相同，用 308 让搜索引擎合并权重。**两者的依据不同，不是不一致。**
+- **排查网络问题时，别从恒定失败里下结论。** 本项目踩过两次：
+  测「Vercel 的 IP 是否可达」时所有 SNI 都是 Vercel 不认识的域名，变量从未改变，
+  却得出了「IP 被封」的错误结论（真相是 Vercel 拒收未配置的 SNI）；
+  以及把 `*.vercel.app` 的 DNS 污染（真实存在）误推为 IP 层封锁。
+  **测 IP 可达性时 SNI 必须是唯一变量**；测自定义域名用 `curl --resolve`。
+- **本地 DNS 缓存会骗人。** 改完解析后 `getent hosts` 可能仍返回旧值。
+  用 DoH 复核：`curl -sS -H "accept: application/dns-json" "https://doh.pub/dns-query?name=<域名>&type=A"`
+- **本机 shell 是 zsh，不做未加引号变量的分词。** 把 `--resolve a:443:1.2.3.4` 存进变量再用
+  `$VAR` 展开会被当成单个参数传给 curl，报 "is unknown"，而**输出为空极易被误读成"没有数据"**。
+  写检查脚本时把参数写全，或改用数组。
 
 <!-- BEGIN:nextjs-agent-rules -->
 
