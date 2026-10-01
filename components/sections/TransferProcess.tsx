@@ -1,4 +1,5 @@
-import { ShieldCheck } from "lucide-react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { site } from "@/config/site";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 /**
@@ -19,7 +20,7 @@ export function TransferProcess({ dict }: { dict: Dictionary }) {
 
         <ol className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
           {dict.transfer.steps.map((step, index) => (
-            <li key={step.title} className="bg-card p-6">
+            <li key={step.id} className="bg-card p-6">
               <span className="font-mono text-xs text-data-ink">
                 {String(index + 1).padStart(2, "0")}
               </span>
@@ -27,6 +28,21 @@ export function TransferProcess({ dict }: { dict: Dictionary }) {
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
                 {step.body}
               </p>
+
+              {/* The recommended venue is named in the copy; this makes it
+                  reachable. The buyer is free to use any provider. */}
+              {step.id === "escrow" && (
+                <a
+                  href={site.recommendedVenueUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1 text-sm text-data-ink underline-offset-4 hover:underline"
+                >
+                  {dict.transfer.aliyunLinkLabel}
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                  <span className="sr-only">({dict.common.opensInNewTab})</span>
+                </a>
+              )}
             </li>
           ))}
         </ol>

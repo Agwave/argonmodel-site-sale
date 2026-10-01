@@ -20,6 +20,15 @@ export const site = {
   marketplaceListingName: null as string | null,
 
   /**
+   * The recommended venue for the transaction, linked from the escrow step.
+   * The domain is registered with Aliyun, so its trading service can complete
+   * escrow and a same-registrar push in one step — which also sidesteps ICANN's
+   * 60-day transfer window. Buyers may use any provider; this is only surfaced
+   * as the suggested default.
+   */
+  recommendedVenueUrl: "https://mi.aliyun.com/",
+
+  /**
    * The date you last verified the prices in `config/pricing.ts`.
    * ⚠️ Bump this whenever you touch a price. `pnpm check-prices` warns if it
    * falls behind.

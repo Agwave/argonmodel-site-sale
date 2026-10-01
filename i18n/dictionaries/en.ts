@@ -6,6 +6,9 @@
  * Functions are used where copy needs interpolation. They run on the server —
  * never pass one across the server/client boundary; resolve it to a string first.
  */
+/** Identifies the step that carries the recommended-marketplace link. */
+export type TransferStepId = "agree" | "escrow" | "transfer";
+
 /** Only `firmness` is substituted at render time; the rest render as written. */
 export type FaqId =
   | "negotiable"
@@ -114,7 +117,9 @@ export interface Dictionary {
   transfer: {
     heading: string;
     lead: string;
-    steps: { title: string; body: string }[];
+    steps: { id: TransferStepId; title: string; body: string }[];
+    /** Label for the link to the recommended marketplace, shown on `escrow`. */
+    aliyunLinkLabel: string;
     feeNote: string;
     noPaymentNote: string;
   };
@@ -154,7 +159,7 @@ export const en: Dictionary = {
   meta: {
     title: "argonmodel.com — premium domain for sale",
     description:
-      "argonmodel.com is available for acquisition. Two dictionary words, one unmistakable meaning: the model layer of the AI era. Escrow-only transfer, replies within 24 hours.",
+      "argonmodel.com is available for acquisition. Two dictionary words — and since 30 September 2026, one specific meaning: Google's new frontier model is named Argon. Escrow-only transfer, replies within 24 hours.",
     ogAlt: "argonmodel.com — premium domain for sale",
   },
 
@@ -170,7 +175,7 @@ export const en: Dictionary = {
   hero: {
     eyebrow: "Premium domain name · Available for acquisition",
     subhead:
-      "Two dictionary words. One unmistakable meaning — the model layer of the AI era.",
+      "Two dictionary words — and since 30 September 2026, one specific meaning: Google's new frontier model is named Argon.",
     priceLabel: (currencyLabel) => `Asking price · ${currencyLabel}`,
     currencyNames: { USD: "USD", CNY: "CNY" },
     priceOnRequest: "Price on request",
@@ -196,20 +201,24 @@ export const en: Dictionary = {
   },
 
   name: {
-    heading: "Why argonmodel.com works",
-    lead: "It reads like a product, not a placeholder.",
+    heading: "Why this name, why now",
+    lead: "It has always read like a product rather than a placeholder. As of 30 September 2026, it also reads as something current.",
     cards: [
       {
-        title: "Argon — element 18",
-        body: "A noble gas: stable, inert, unreactive. In security engineering, Argon2 is the password-hashing standard. The word says stability before it says anything else — a useful thing for a model to say.",
+        title: "Argon is now a model name",
+        body: "On 30 September 2026, Google announced Gemini 4 Argon, describing it as its most capable model to date; early coverage placed it at the top of several reasoning and security benchmarks. A word that previously meant only a chemical element is now also the name of a frontier AI model.",
+      },
+      {
+        title: "And the word already means something",
+        body: "Argon is a noble gas: inert, unreactive, stable. It is the element that refuses to react with anything — which is exactly why it fills light bulbs and shields welds. In security engineering, Argon2 is the password-hashing standard. The word carried a meaning long before it carried a brand.",
       },
       {
         title: "Model — the noun of the decade",
         body: "Foundation model. Language model. Diffusion model. Every company in the category organises itself around this one word. Owning it in a compound is owning a category descriptor.",
       },
       {
-        title: "Together: the model layer",
-        body: "argonmodel.com reads as a lab, a platform, or a product line. Category-descriptive and brandable at the same time — the rarest combination in naming, and the reason two-word .com compounds are the most contested space in the aftermarket.",
+        title: "Together: a stable model",
+        body: "Read literally, argonmodel says “stable model” — inert in the sense of not degrading, not drifting, not reacting to what it should not. That is a claim nearly every AI company is trying to make, and very few names make it by accident. Category-descriptive and brandable at once: the rarest combination in naming, and why two-word .com compounds are the most contested space in the aftermarket.",
       },
     ],
     stats: [
@@ -269,7 +278,7 @@ export const en: Dictionary = {
       "A second word that names the category. “Model” is not decoration; it is the noun the AI industry is built on.",
       "Passes the radio test: say it once, and the listener can spell it.",
       "No hyphens, no numbers, no misspellings to explain.",
-      "Priced alongside the comparable asks above, not above them.",
+      "The name is now specific. A generic compound is worth one thing; one that points at a live frontier model is worth another.",
     ],
     closing:
       "Reasonable offers are considered. The number above is an opening position, not a threshold.",
@@ -277,23 +286,27 @@ export const en: Dictionary = {
 
   transfer: {
     heading: "How the transfer works",
-    lead: "No forms, no accounts, no payment on this site. Three steps, all of them reversible until you have the domain.",
+    lead: "No forms, no accounts, no payment on this site. Two routes, and we recommend the first.",
     steps: [
       {
+        id: "agree",
         title: "Agree on a price",
         body: "Email us. We reply within 24 hours with a yes, a counter, or a no.",
       },
       {
-        title: "Escrow",
-        body: "You choose the escrow provider — Escrow.com, Dan.com, or Afternic. Funds are held by the escrow service, not by us. We do not accept payment any other way.",
+        id: "escrow",
+        title: "Pay into escrow",
+        body: "We recommend Aliyun's domain trading service: the domain is already registered there, so escrow and transfer happen in one step and the handover takes minutes. If you would rather use an international provider, Escrow.com, Dan.com and Afternic are equally acceptable. Whoever holds the funds, it is never us.",
       },
       {
+        id: "transfer",
         title: "Transfer",
-        body: "We push the domain to your registrar account or provide the authorization code. Minutes for a same-registrar push; up to 7 days for a cross-registrar transfer. Escrow releases funds after you confirm you control the name.",
+        body: "Aliyun to Aliyun is a same-registrar push — minutes, and outside ICANN's transfer window. Any other route is a cross-registrar transfer, which ICANN permits only 60 days after registration; this domain was registered on 1 October 2026. Funds are released once you confirm you control the name.",
       },
     ],
+    aliyunLinkLabel: "Aliyun domain trading",
     feeNote:
-      "Buyer covers the escrow fee unless we agree otherwise in writing before the transaction.",
+      "Any platform or escrow fee is agreed in writing before the transaction starts. Nothing is ever paid to us directly.",
     noPaymentNote:
       "This site takes no payment and collects no personal data. There is no form to fill in.",
   },
@@ -330,7 +343,7 @@ export const en: Dictionary = {
       {
         id: "ownership",
         q: "Are you the owner?",
-        a: "Yes. Ownership is verifiable through the registrar's public WHOIS record and through the marketplace listing linked on this page.",
+        a: "Yes. Note that the registrar's public WHOIS record for this domain is redacted, so WHOIS alone will not prove it. What is checkable right now: this page is served from the domain itself, so whoever publishes it controls the domain's DNS. The decisive check happens at the transfer — an escrow provider confirms the seller controls the name before releasing funds, and you can require that verification before committing anything.",
       },
       {
         id: "whySelling",
@@ -340,7 +353,7 @@ export const en: Dictionary = {
       {
         id: "trademark",
         q: "Are there trademark conflicts?",
-        a: "No trademark claim is made or implied by this listing. Buyers are responsible for their own trademark clearance in their jurisdiction.",
+        a: "This listing makes no trademark claim, and implies no affiliation with, sponsorship by, or endorsement from any company that uses “Argon” as a product name. Trademark rights are territorial and fact-specific. Buyers are responsible for their own clearance in the jurisdictions they intend to operate in, before putting the name to commercial use.",
       },
     ],
     firmnessAnswers: {

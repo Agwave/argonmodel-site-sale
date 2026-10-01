@@ -11,7 +11,9 @@ export function NameBreakdown({ dict }: { dict: Dictionary }) {
           {dict.name.lead}
         </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {/* 2×2 — the four cards read as a sequence: the news, then what each
+            half of the name means, then what the two say together. */}
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
           {dict.name.cards.map((card, index) => (
             <div
               key={card.title}

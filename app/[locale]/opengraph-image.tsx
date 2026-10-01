@@ -105,7 +105,7 @@ export default function OpengraphImage() {
             argonmodel.com
           </div>
           <div style={{ display: "flex", fontSize: 30, color: MUTED }}>
-            Two dictionary words. One unmistakable meaning.
+            Two dictionary words — and since 30 Sep 2026, a model name.
           </div>
         </div>
 
