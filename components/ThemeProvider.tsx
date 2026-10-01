@@ -3,8 +3,10 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 /**
- * Dark-first: the palette is designed for the dark surface, so that is the
- * default rather than the visitor's OS preference. An explicit toggle still wins.
+ * Light by default. The site has no server-side notion of a visitor's
+ * preference, so `enableSystem` is off and the toggle is the only thing that
+ * switches to dark — the default is then exactly what the config says rather
+ * than a guess from the OS.
  *
  * Uses localStorage, not a cookie, so the footer's "no cookies" claim holds.
  */
@@ -12,7 +14,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="dark"
+      defaultTheme="light"
       enableSystem={false}
       disableTransitionOnChange
       storageKey="argon-theme"
