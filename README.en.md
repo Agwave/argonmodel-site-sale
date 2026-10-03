@@ -66,8 +66,8 @@ Your asking price and the comparable listings.
 
 ```ts
 export const askingPrice: AskingPrice = { mode: "tbd" };
-export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "USD" };
-export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "USD" };
+export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "CNY" };
+export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "CNY" };
 ```
 
 - `tbd` — no number renders anywhere. The hero reads "Price on request".
@@ -152,7 +152,7 @@ distinction is the whole design:
 
 | | Rendered as |
 |---|---|
-| **Native** — already in the display currency | the exact figure: `$888`, `¥38,024` |
+| **Native** — already in the display currency | the exact figure: `¥888`, `¥38,024` |
 | **Converted** into the display currency | `≈` and rounded: `≈ $5,660`, `≈ ¥6,000` |
 
 Rounding a conversion is not sloppiness — it is the honest presentation, because
@@ -175,10 +175,12 @@ USD-denominated asking price is converted there.
 - Bar lengths and the summary tiles are computed on the display currency as a
   shared basis — comparing raw amounts across currencies would make the bars
   meaningless.
-- The Chinese footer states **"The transaction currency is USD."**, and a
-  converted hero price is restated in its original currency underneath. Without
-  that, a Chinese buyer might reasonably think they are agreeing to the CNY
-  number.
+- The footer states **the currency the ask is denominated in**, and the English
+  page restates a converted hero price in the currency it was quoted in. Both
+  derive from `askingPrice.currency` rather than hardcoding one — a hardcoded
+  label contradicts itself the moment the ask changes currency, which has
+  already happened twice in this repo. Without it stated, a buyer cannot tell
+  which currency's figure they would be agreeing to.
 
 ---
 
@@ -342,10 +344,9 @@ kind:
 
 - [x] `argonmodel.com` points at Vercel (direct, apex primary, `www` 308-redirects)
 - [x] `CONTACT_EMAIL` is set in Vercel and live
-- [x] `askingPrice` is set to `$888` (`indicative`)
+- [x] `askingPrice` is set to `¥888` (`indicative`), matching the Aliyun listing
 - [x] Live price fetching verified on Vercel (the page shows the `auto` tag)
-- [ ] Decide whether `$888` should be `indicative` or `firm` — the chip and the
-      FAQ answer both derive from this, so it is a one-word change
+- [x] Listed on Aliyun domain trading; the URL is set in `config/site.ts`
 - [ ] Submit `https://argonmodel.com/sitemap.xml` to Google Search Console / Bing
       so the new site gets indexed sooner
 - [ ] If you also list the domain on a marketplace, add it to `config/site.ts`;

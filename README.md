@@ -61,8 +61,8 @@ cp .env.example .env.local     # 然后填写
 
 ```ts
 export const askingPrice: AskingPrice = { mode: "tbd" };
-export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "USD" };
-export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "USD" };
+export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "CNY" };
+export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "CNY" };
 ```
 
 - `tbd` — 任何位置都不渲染数字，hero 显示「价格面议」。
@@ -129,7 +129,7 @@ Atom.com 和 Sedo 都对自家挂牌页面做了自动化封锁，其卖家 API 
 
 | | 渲染为 |
 |---|---|
-| **原生** —— 本就是这个显示币种 | 精确值：`$888`、`¥38,024` |
+| **原生** —— 本就是这个显示币种 | 精确值：`¥888`、`¥38,024` |
 | **换算** 到该显示币种 | 带 `≈` 并取整：`≈ $5,660`、`≈ ¥6,000` |
 
 给换算值取整不是马虎，而是**诚实的呈现**：换算值本身没有精度可言，
@@ -147,8 +147,10 @@ Atom.com 和 Sedo 都对自家挂牌页面做了自动化封锁，其卖家 API 
   **回退值绝不会被伪装成实时值。**
 - 比价条的宽度和统计块都基于显示币种这一统一基准计算——
   直接跨币种比较原始数字会让柱子失去意义。
-- 中文页脚明确写出**「交易货币为美元」**，且 hero 上的换算价格下方会重申原始币种金额。
-  没有这句话，中文买家可能会以为自己同意的是人民币那个数字。
+- 页脚明确写出**报价的计价币种**，英文页在换算价格下方还会重申原始报价的金额与币种。
+  两者都从 `askingPrice.currency` 派生，**不是写死的**——写死的币种会在改币种时
+  自我矛盾（本仓库实际发生过两次：要价标签、原始报价行）。
+  没有这句，买家无法确定自己同意的是哪种货币的哪个数字。
 
 ---
 
@@ -289,10 +291,9 @@ DNS 校验用的 TXT 记录和 MX 记录请始终保持灰云——Cloudflare �
 
 - [x] `argonmodel.com` 已指向 Vercel（灰云直连，根域名为主域，`www` 308 跳转）
 - [x] `CONTACT_EMAIL` 已在 Vercel 配置并生效
-- [x] `askingPrice` 已设为 `$888`（`indicative`）
+- [x] `askingPrice` 已设为 `¥888`（`indicative`），且与阿里云挂牌价一致
 - [x] 竞品价格实时抓取在 Vercel 上验证可用（页面显示 `auto` 标记）
-- [ ] 决定 `$888` 应该是 `indicative` 还是 `firm`——状态标记和 FAQ 答案都由它派生，
-      改一个词即可
+- [x] 已在阿里云域名交易上架，链接填入 `config/site.ts` 的 `marketplaceListingUrl`
 - [ ] 在 Google Search Console / Bing 提交 `https://argonmodel.com/sitemap.xml`，
       让新站被尽快收录
 - [ ] 如果你也在某个平台挂了售，把链接填进 `config/site.ts`；
