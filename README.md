@@ -57,17 +57,26 @@ cp .env.example .env.local     # 然后填写
 
 你的要价与竞品条目。
 
-**你的要价是三态值，不是裸数字：**
+**你的要价是四态值，不是裸数字：**
 
 ```ts
 export const askingPrice: AskingPrice = { mode: "tbd" };
 export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "CNY" };
 export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "CNY" };
+export const askingPrice: AskingPrice = { mode: "sold" };
 ```
 
 - `tbd` — 任何位置都不渲染数字，hero 显示「价格面议」。
 - `indicative` / `firm` — 数字**与状态标记一起**渲染。两者来自同一个对象，
   所以页面在结构上不可能「显示了数字却没说清这是什么数字」。
+- `sold` — 域名已售出。价格、全部 CTA、信任条、过户流程、FAQ、结尾 CTA
+  一并消失，结构化数据改为 `SoldOut`，meta 标题与描述换成「已售出」版本。
+
+> **成交谈定后立刻设成 `sold`，不要等过户完成。** 买家一旦改解析，
+> 这个页面就再也没人访问了，那时再改已经没意义。
+
+新增一个状态会在**每一处按 `mode` 分支的渲染点**产生编译错误，这是刻意的——
+否则某些渲染点会静默地为一个已售出的域名继续渲染购买入口。
 
 FAQ 里「这个报价是实价吗」的答案由同一个值派生，因此永远不会和 hero 矛盾。
 

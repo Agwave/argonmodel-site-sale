@@ -62,18 +62,31 @@ Site identity (the domain wordmark), an optional marketplace listing URL, and
 
 Your asking price and the comparable listings.
 
-**Your asking price is a three-state value, not a bare number:**
+**Your asking price is a four-state value, not a bare number:**
 
 ```ts
 export const askingPrice: AskingPrice = { mode: "tbd" };
 export const askingPrice: AskingPrice = { mode: "indicative", amount: 888, currency: "CNY" };
 export const askingPrice: AskingPrice = { mode: "firm",       amount: 888, currency: "CNY" };
+export const askingPrice: AskingPrice = { mode: "sold" };
 ```
 
 - `tbd` — no number renders anywhere. The hero reads "Price on request".
 - `indicative` / `firm` — the number renders *together with* a status chip. The
   two come from the same object, so the page structurally cannot show a figure
   without also showing what kind of figure it is.
+- `sold` — the domain has gone. The price, every call to action, the trust
+  strip, the transfer process, the FAQ and the closing CTA all disappear;
+  structured data flips to `SoldOut`, and the meta title and description change
+  to their sold variants.
+
+> **Set this the moment a deal is agreed, not after the transfer completes.**
+> Once the buyer repoints the DNS, nobody reaches this page any more and the
+> edit is moot.
+
+Adding a state produces a compile error at every render site that branches on
+`mode`. That is deliberate — a site that was missed would otherwise quietly keep
+rendering a buying prompt for a domain that is no longer for sale.
 
 The FAQ answer to "is the asking price firm?" is derived from this same value, so
 it can never contradict the hero.
