@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { isLocale, localeTags, locales, type Locale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
-import { askingPrice } from "@/config/pricing";
+import { askingPrice, publishedPrice } from "@/config/pricing";
 import { site } from "@/config/site";
 import { siteUrl } from "@/lib/env";
 import { formatDate, makePriceFormatter } from "@/lib/format";
@@ -39,6 +39,7 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
   // One clock for the whole render, so staleness and the review date agree.
   const now = new Date();
   const lastReviewed = formatDate(site.lastReviewed, locale);
+  const isSold = askingPrice.mode === "sold";
 
   return (
     <>
@@ -62,9 +63,16 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
           livePrices={livePrices}
         />
         <PricingRationale dict={dict} />
-        <TransferProcess dict={dict} />
-        <Faq dict={dict} />
-        <FinalCta dict={dict} />
+        {/* The remaining sections exist to transact. With the domain sold there
+            is nothing to buy, so they are dropped rather than left to advertise
+            a purchase that cannot happen. */}
+        {!isSold && (
+          <>
+            <TransferProcess dict={dict} />
+            <Faq dict={dict} />
+            <FinalCta dict={dict} />
+          </>
+        )}
       </main>
 
       <SiteFooter dict={dict} locale={locale} fx={fx} lastReviewed={lastReviewed} />
@@ -89,29 +97,48 @@ function StructuredData({
   lastReviewed: string;
 }) {
   const formatPrice = makePriceFormatter(locale, fx);
+  const published = publishedPrice(askingPrice);
+  const isSold = askingPrice.mode === "sold";
 
   const data = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: site.domain,
-    description: dict.meta.description,
+    // Must agree with `availability` below — a description still reading
+    // "for sale" next to a SoldOut offer is self-contradictory structured data.
+    description: isSold ? dict.meta.soldDescription : dict.meta.description,
     url: `${siteUrl}/${locale}`,
     inLanguage: localeTags[locale],
-    ...(askingPrice.mode === "tbd"
-      ? {}
-      : {
+    /**
+     * A sold domain must not advertise itself as available anywhere, structured
+     * data included. Note this is a top-level branch on `mode`, not a ternary
+     * inside the `published` case — `published` is null once sold, so putting the
+     * SoldOut branch there would make it unreachable. TypeScript does not flag an
+     * unreachable ternary, so only rendering the page catches it.
+     */
+    ...(askingPrice.mode === "sold"
+      ? {
           offers: {
             "@type": "Offer",
-            // The native quote, in its own currency — the amount the seller is
-            // actually asking. Converting it here would publish a number the
-            // page never states.
-            price: askingPrice.amount,
-            priceCurrency: askingPrice.currency,
-            availability: "https://schema.org/InStock",
+            availability: "https://schema.org/SoldOut",
             url: `${siteUrl}/${locale}`,
-            description: formatPrice(askingPrice.amount, askingPrice.currency),
           },
-        }),
+        }
+      : published
+        ? {
+            offers: {
+              "@type": "Offer",
+              // The native quote, in its own currency — the amount the seller is
+              // actually asking. Converting it here would publish a number the
+              // page never states.
+              price: published.amount,
+              priceCurrency: published.currency,
+              availability: "https://schema.org/InStock",
+              url: `${siteUrl}/${locale}`,
+              description: formatPrice(published.amount, published.currency),
+            },
+          }
+        : {}),
     ...(site.marketplaceListingUrl
       ? { sameAs: [site.marketplaceListingUrl] }
       : {}),

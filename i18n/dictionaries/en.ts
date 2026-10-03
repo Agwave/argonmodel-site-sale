@@ -30,10 +30,15 @@ export interface Dictionary {
     title: string;
     description: string;
     ogAlt: string;
+    /** Used instead of the pair above while the domain is sold. */
+    soldTitle: string;
+    soldDescription: string;
   };
   header: {
     wordmark: string;
     available: string;
+    /** Replaces `available` once the domain is gone — the two must never disagree. */
+    sold: string;
     availableAria: (date: string) => string;
     themeToggle: string;
     languageLabel: string;
@@ -54,7 +59,12 @@ export interface Dictionary {
       tbd: string;
       indicative: string;
       firm: string;
+      sold: string;
     };
+    /** Hero eyebrow while the domain is sold, replacing the "for acquisition" line. */
+    eyebrowSold: string;
+    /** Stands where the price stood. No figure is shown once the domain is gone. */
+    soldLabel: string;
     /**
      * Shown beneath a converted hero price, restating it in the currency the
      * ask is actually quoted in. Takes the currency name rather than hardcoding
@@ -90,6 +100,8 @@ export interface Dictionary {
     };
     thisDomain: string;
     forSale: string;
+    /** Subject-row status once the domain has been sold. */
+    sold: string;
     activeListing: string;
     parked: string;
     makeOffer: string;
@@ -142,7 +154,7 @@ export interface Dictionary {
      * The firmness answer is stored per asking-price mode and substituted in by
      * the component, so it can never contradict what the hero is showing.
      */
-    firmnessAnswers: Record<"tbd" | "indicative" | "firm", string>;
+    firmnessAnswers: Record<"tbd" | "indicative" | "firm" | "sold", string>;
   };
   finalCta: {
     heading: string;
@@ -176,11 +188,15 @@ export const en: Dictionary = {
     description:
       "argonmodel.com is available for acquisition. Two dictionary words — and since 30 September 2026, one specific meaning: Google's new frontier model is named Argon. Escrow-only transfer, replies within 24 hours.",
     ogAlt: "argonmodel.com — premium domain for sale",
+    soldTitle: "argonmodel.com — sold",
+    soldDescription:
+      "argonmodel.com has been sold and is no longer available. This page is kept as a record of the listing.",
   },
 
   header: {
     wordmark: "argonmodel.com",
     available: "Available",
+    sold: "Sold",
     availableAria: (date) => `Available for acquisition, as of ${date}`,
     themeToggle: "Toggle theme",
     languageLabel: "Language",
@@ -197,7 +213,10 @@ export const en: Dictionary = {
       tbd: "No public price — send an offer",
       indicative: "Indicative — subject to confirmation",
       firm: "Firm asking price",
+      sold: "This domain has been sold and is no longer available",
     },
+    eyebrowSold: "Premium domain name · Sold",
+    soldLabel: "Sold",
     originalQuote: (formatted, currencyLabel) =>
       `Quoted in ${currencyLabel}: ${formatted}`,
     ctaPrimary: "Email your offer",
@@ -259,6 +278,7 @@ export const en: Dictionary = {
     },
     thisDomain: "This domain",
     forSale: "For sale",
+    sold: "Sold",
     activeListing: "Active listing",
     parked: "Parked",
     makeOffer: "Make offer",
@@ -379,6 +399,7 @@ export const en: Dictionary = {
       indicative:
         "It is an indicative asking price, not a final quote. The binding number is whatever we agree to in writing before escrow opens.",
       firm: "It is the asking price. We will consider offers below it, but we will not treat the number itself as a starting bid.",
+      sold: "Neither — the domain has been sold and is no longer for sale. This page is kept as a record of what it was offered at.",
     },
   },
 

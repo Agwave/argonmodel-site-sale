@@ -15,11 +15,15 @@ export const zh: Dictionary = {
     description:
       "argonmodel.com 正在出售。两个词典单词——自 2026 年 9 月 30 日起，它们有了一个明确的指向：Google 的新一代前沿模型名为 Argon。仅走第三方担保交易，24 小时内回复。",
     ogAlt: "argonmodel.com — 精品域名出售",
+    soldTitle: "argonmodel.com — 已售出",
+    soldDescription:
+      "argonmodel.com 已售出，不再出售。本页作为当时的挂牌记录保留。",
   },
 
   header: {
     wordmark: "argonmodel.com",
     available: "可出售",
+    sold: "已售出",
     availableAria: (date) => `可出售，状态更新于 ${date}`,
     themeToggle: "切换主题",
     languageLabel: "语言",
@@ -36,7 +40,10 @@ export const zh: Dictionary = {
       tbd: "暂无公开报价 — 欢迎出价",
       indicative: "指示性价格 — 以最终确认为准",
       firm: "实价",
+      sold: "该域名已售出，不再出售",
     },
+    eyebrowSold: "精品域名 · 已售出",
+    soldLabel: "已售出",
     originalQuote: (formatted, currencyLabel) =>
       `原始报价 ${formatted}（以${currencyLabel}计价）`,
     ctaPrimary: "发送邮件出价",
@@ -88,6 +95,7 @@ export const zh: Dictionary = {
     },
     thisDomain: "本域名",
     forSale: "在售",
+    sold: "已售出",
     activeListing: "挂牌中",
     parked: "停放中",
     makeOffer: "接受报价",
@@ -213,6 +221,7 @@ export const zh: Dictionary = {
       indicative:
         "这是指示性报价，不是最终要价。真正有约束力的数字，是双方在托管启动前书面确认的那个。",
       firm: "这是实价。我们仍会考虑低于该价格的报价，但不会把这个数字本身当作竞价起点。",
+      sold: "都不是——该域名已售出，不再出售。本页保留下来，作为当时挂牌价的记录。",
     },
   },
 

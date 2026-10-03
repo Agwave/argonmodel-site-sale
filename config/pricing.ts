@@ -19,18 +19,28 @@ export type Currency = "USD" | "CNY";
 /**
  * Your asking price.
  *
- * Modelled as three states rather than a bare number so that the page can never
- * render a number without also rendering what kind of number it is.
+ * Modelled as states rather than a bare number so that the page can never render
+ * a number without also rendering what kind of number it is.
  *
  * - `tbd`         — no number is shown at all; the hero reads "Price on request".
  *                   Nothing false can render.
  * - `indicative`  — shows the number plus a persistent "subject to confirmation" chip.
  * - `firm`        — shows the number plus a "Firm asking price" chip.
+ * - `sold`        — the domain has gone. The price is dropped, every call to
+ *                   action is dropped with it, and the transactional sections
+ *                   stop rendering. **Set this the moment a deal is agreed, not
+ *                   after the transfer completes** — once the buyer repoints the
+ *                   DNS, nobody reaches this page any more and the edit is moot.
+ *
+ * Adding a state here is a compile error at every render site that switches on
+ * `mode`, which is deliberate: some of those sites would otherwise silently
+ * render a buying prompt for a domain that is no longer for sale.
  */
 export type AskingPrice =
   | { mode: "tbd" }
   | { mode: "indicative"; amount: number; currency: Currency }
-  | { mode: "firm"; amount: number; currency: Currency };
+  | { mode: "firm"; amount: number; currency: Currency }
+  | { mode: "sold" };
 
 /**
  * Amount and currency must match the live Aliyun listing exactly — the page and
@@ -42,6 +52,19 @@ export const askingPrice: AskingPrice = {
   amount: 888,
   currency: "CNY",
 };
+
+/**
+ * The published figure, or null when there is none to show (`tbd`, or `sold`).
+ *
+ * A single accessor so that every render site narrows the union the same way —
+ * `askingPrice.amount` outside of this would be a type error for good reason,
+ * since `sold` has no price and `tbd` never had one.
+ */
+export function publishedPrice(
+  price: AskingPrice,
+): { amount: number; currency: Currency } | null {
+  return price.mode === "indicative" || price.mode === "firm" ? price : null;
+}
 
 /** Whether a comparable is currently listed, or merely parked with no price. */
 export type ComparableStatus = "active" | "parked";

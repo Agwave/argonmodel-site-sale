@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import { askingPrice } from "@/config/pricing";
+import { askingPrice, publishedPrice } from "@/config/pricing";
 import { marketplaceListing, site } from "@/config/site";
 import { contactEmail } from "@/lib/env";
 import type { Locale } from "@/i18n/config";
@@ -28,7 +28,10 @@ export function SiteFooter({
       ? dict.footer.fxNoteLive(formatRate(fx.rate), asOf)
       : dict.footer.fxNoteFallback(formatRate(fx.rate));
 
-  const listing = marketplaceListing();
+  const published = publishedPrice(askingPrice);
+  // The listing is taken down when the domain sells, so linking it would lead
+  // visitors to a dead page.
+  const listing = askingPrice.mode === "sold" ? null : marketplaceListing();
 
   return (
     <footer className="border-t border-border">
@@ -61,13 +64,11 @@ export function SiteFooter({
             <li>{dict.footer.dataNote}</li>
             <li>{fxNote}</li>
             {/* Derived from the ask, never hardcoded — the denomination is the
-                one fact a buyer must not have to guess at. Omitted while the
-                price is unpublished, since there is nothing to denominate. */}
-            {askingPrice.mode !== "tbd" && (
+                one fact a buyer must not have to guess at. Omitted when there is
+                no published figure (never priced, or already sold). */}
+            {published && (
               <li className="text-muted-foreground">
-                {dict.footer.currencyNote(
-                  dict.currencyNames[askingPrice.currency],
-                )}
+                {dict.footer.currencyNote(dict.currencyNames[published.currency])}
               </li>
             )}
           </ul>

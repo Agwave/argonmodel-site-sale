@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import {
   askingPrice,
   comparables,
+  publishedPrice,
   stalenessThresholdDays,
   subject,
 } from "@/config/pricing";
@@ -86,19 +87,25 @@ export function Comparables({
   const toDisplay = (amount: number, currency: Currency): number =>
     toDisplayAmount(amount, currency, locale, fx);
 
+  const subjectPrice = publishedPrice(askingPrice);
+
   const rows: Row[] = [
     {
       domain: subject.domain,
       isSubject: true,
-      amount: askingPrice.mode === "tbd" ? null : askingPrice.amount,
-      amountCurrency: askingPrice.mode === "tbd" ? "USD" : askingPrice.currency,
-      priceText:
-        askingPrice.mode === "tbd"
-          ? dict.hero.priceOnRequest
-          : formatPrice(askingPrice.amount, askingPrice.currency),
+      // Once sold the row keeps its place but stops claiming a price, so the
+      // bar and the summary statistics drop it out on their own.
+      amount: subjectPrice?.amount ?? null,
+      amountCurrency: subjectPrice?.currency ?? "USD",
+      priceText: subjectPrice
+        ? formatPrice(subjectPrice.amount, subjectPrice.currency)
+        : dict.hero.priceOnRequest,
       sourceName: null,
       sourceUrl: null,
-      statusLabel: dict.comparables.forSale,
+      statusLabel:
+        askingPrice.mode === "sold"
+          ? dict.comparables.sold
+          : dict.comparables.forSale,
       checkedLabel: null,
       stale: false,
       isLive: false,

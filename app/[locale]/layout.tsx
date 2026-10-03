@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { isLocale, localeTags, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { askingPrice } from "@/config/pricing";
 import { site } from "@/config/site";
 import { siteUrl } from "@/lib/env";
 import "../globals.css";
@@ -34,10 +35,16 @@ export async function generateMetadata(
 
   const dict = getDictionary(locale);
 
+  // A sold domain should not advertise itself as available in search results or
+  // link previews — the first thing a reader sees must match reality.
+  const isSold = askingPrice.mode === "sold";
+  const title = isSold ? dict.meta.soldTitle : dict.meta.title;
+  const description = isSold ? dict.meta.soldDescription : dict.meta.description;
+
   return {
     metadataBase: new URL(siteUrl),
-    title: dict.meta.title,
-    description: dict.meta.description,
+    title,
+    description,
     applicationName: site.domain,
     alternates: {
       canonical: `/${locale}`,
@@ -51,14 +58,14 @@ export async function generateMetadata(
       type: "website",
       url: `/${locale}`,
       siteName: site.domain,
-      title: dict.meta.title,
-      description: dict.meta.description,
+      title,
+      description,
       locale: localeTags[locale].replace("-", "_"),
     },
     twitter: {
       card: "summary_large_image",
-      title: dict.meta.title,
-      description: dict.meta.description,
+      title,
+      description,
     },
     robots: { index: true, follow: true },
   };

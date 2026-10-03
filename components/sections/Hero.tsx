@@ -2,7 +2,7 @@ import { Info } from "lucide-react";
 import { CopyEmailButton } from "@/components/CopyEmailButton";
 import { MailtoLink } from "@/components/cta";
 import { PriceCounter } from "@/components/PriceCounter";
-import { askingPrice } from "@/config/pricing";
+import { askingPrice, publishedPrice } from "@/config/pricing";
 import { element, site } from "@/config/site";
 import { contactEmail } from "@/lib/env";
 import { localeTags, type Locale } from "@/i18n/config";
@@ -20,11 +20,13 @@ export function Hero({
   fx: FxRate;
 }) {
   // The union makes it impossible to render a number without its status chip:
-  // both come from the same value.
-  const price =
-    askingPrice.mode === "tbd"
-      ? null
-      : displayPrice(askingPrice.amount, askingPrice.currency, locale, fx);
+  // both come from the same value, and `sold` carries neither a figure nor a
+  // call to action.
+  const published = publishedPrice(askingPrice);
+  const price = published
+    ? displayPrice(published.amount, published.currency, locale, fx)
+    : null;
+  const isSold = askingPrice.mode === "sold";
   const statusNote = dict.hero.statusNote[askingPrice.mode];
 
   return (
@@ -41,7 +43,7 @@ export function Hero({
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-16">
           <div className="min-w-0">
             <p className="font-mono text-xs tracking-[0.12em] text-muted-foreground uppercase">
-              {dict.hero.eyebrow}
+              {isSold ? dict.hero.eyebrowSold : dict.hero.eyebrow}
             </p>
 
             <h1 className="mt-5 font-mono text-[clamp(2.25rem,7vw,4.5rem)] leading-none tracking-[-0.03em] break-all">
@@ -53,15 +55,22 @@ export function Hero({
             </p>
 
             <div className="mt-10">
-              <p className="font-mono text-xs tracking-[0.12em] text-ink-muted uppercase">
-                {/* The label names the currency being *displayed* — the Chinese
-                    page shows a CNY conversion even though the ask is in USD. */}
-                {dict.hero.priceLabel(
-                  dict.currencyNames[displayCurrencyFor(locale)],
-                )}
-              </p>
+              {/* No "asking price" label once it's sold — there is no ask. */}
+              {!isSold && (
+                <p className="font-mono text-xs tracking-[0.12em] text-ink-muted uppercase">
+                  {/* The label names the currency being *displayed*, which is not
+                      necessarily the one the ask is quoted in. */}
+                  {dict.hero.priceLabel(
+                    dict.currencyNames[displayCurrencyFor(locale)],
+                  )}
+                </p>
+              )}
 
-              {price ? (
+              {isSold ? (
+                <p className="mt-2 text-[clamp(2.5rem,8vw,4.5rem)] leading-none font-semibold text-muted-foreground">
+                  {dict.hero.soldLabel}
+                </p>
+              ) : price ? (
                 <PriceCounter
                   prefix={price.prefix}
                   value={price.value}
@@ -83,39 +92,47 @@ export function Hero({
               {/* When the displayed figure is a conversion, restate the amount
                   the seller actually quoted — that is the number the deal is
                   written in. */}
-              {price && !price.isNative && askingPrice.mode !== "tbd" && (
+              {published && price && !price.isNative && (
                 <p className="mt-2 font-mono text-xs text-ink-muted">
                   {dict.hero.originalQuote(
-                    formatNative(askingPrice.amount, askingPrice.currency, locale),
-                    dict.currencyNames[askingPrice.currency],
+                    formatNative(published.amount, published.currency, locale),
+                    dict.currencyNames[published.currency],
                   )}
                 </p>
               )}
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <MailtoLink email={contactEmail} subject={dict.hero.mailSubject}>
-                {dict.hero.ctaPrimary}
-              </MailtoLink>
-              <CopyEmailButton
-                email={contactEmail}
-                label={dict.hero.ctaSecondary}
-                copiedLabel={dict.hero.copied}
-              />
-            </div>
+            {/* A sold listing has nothing to enquire about, so every call to
+                action goes with the price. */}
+            {!isSold && (
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <MailtoLink email={contactEmail} subject={dict.hero.mailSubject}>
+                  {dict.hero.ctaPrimary}
+                </MailtoLink>
+                <CopyEmailButton
+                  email={contactEmail}
+                  label={dict.hero.ctaSecondary}
+                  copiedLabel={dict.hero.copied}
+                />
+              </div>
+            )}
 
-            <ul className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
-              {dict.hero.trust.map((item, index) => (
-                <li key={item} className="flex items-center gap-3">
-                  {index > 0 && (
-                    <span aria-hidden="true" className="text-border">
-                      ·
-                    </span>
-                  )}
-                  {item}
-                </li>
-              ))}
-            </ul>
+            {/* Escrow, transfer times and reply promises are all about buying.
+                They read as nonsense next to "Sold", so they go with the CTAs. */}
+            {!isSold && (
+              <ul className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+                {dict.hero.trust.map((item, index) => (
+                  <li key={item} className="flex items-center gap-3">
+                    {index > 0 && (
+                      <span aria-hidden="true" className="text-border">
+                        ·
+                      </span>
+                    )}
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <ElementTile dict={dict} />
