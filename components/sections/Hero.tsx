@@ -57,7 +57,7 @@ export function Hero({
                 {/* The label names the currency being *displayed* — the Chinese
                     page shows a CNY conversion even though the ask is in USD. */}
                 {dict.hero.priceLabel(
-                  dict.hero.currencyNames[displayCurrencyFor(locale)],
+                  dict.currencyNames[displayCurrencyFor(locale)],
                 )}
               </p>
 
@@ -86,11 +86,8 @@ export function Hero({
               {price && !price.isNative && askingPrice.mode !== "tbd" && (
                 <p className="mt-2 font-mono text-xs text-ink-muted">
                   {dict.hero.originalQuote(
-                    formatNative(
-                      askingPrice.amount,
-                      askingPrice.currency,
-                      locale,
-                    ),
+                    formatNative(askingPrice.amount, askingPrice.currency, locale),
+                    dict.currencyNames[askingPrice.currency],
                   )}
                 </p>
               )}

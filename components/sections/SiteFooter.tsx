@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import { askingPrice } from "@/config/pricing";
 import { marketplaceListing, site } from "@/config/site";
 import { contactEmail } from "@/lib/env";
 import type { Locale } from "@/i18n/config";
@@ -59,7 +60,16 @@ export function SiteFooter({
             <li>{dict.footer.reviewed(lastReviewed)}</li>
             <li>{dict.footer.dataNote}</li>
             <li>{fxNote}</li>
-            <li className="text-muted-foreground">{dict.footer.currencyNote}</li>
+            {/* Derived from the ask, never hardcoded — the denomination is the
+                one fact a buyer must not have to guess at. Omitted while the
+                price is unpublished, since there is nothing to denominate. */}
+            {askingPrice.mode !== "tbd" && (
+              <li className="text-muted-foreground">
+                {dict.footer.currencyNote(
+                  dict.currencyNames[askingPrice.currency],
+                )}
+              </li>
+            )}
           </ul>
         </div>
 

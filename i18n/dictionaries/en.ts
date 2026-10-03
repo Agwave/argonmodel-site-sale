@@ -21,6 +21,11 @@ export type FaqId =
   | "trademark";
 
 export interface Dictionary {
+  /**
+   * Display names for the currencies a price can be denominated in. Lives at the
+   * top level because the hero, the comparison table and the footer all need it.
+   */
+  currencyNames: Record<"USD" | "CNY", string>;
   meta: {
     title: string;
     description: string;
@@ -39,12 +44,10 @@ export interface Dictionary {
     subhead: string;
     /**
      * Labels the currency the locale *displays*, which is not necessarily the
-     * currency the ask is quoted in — the Chinese page shows a CNY conversion of
-     * a USD price. Takes the label from `currencyNames` so the two cannot drift.
+     * currency the ask is quoted in — the English page shows a USD conversion of
+     * a CNY price. Takes the label from `currencyNames` so the two cannot drift.
      */
     priceLabel: (currencyLabel: string) => string;
-    /** Display names for the two display currencies, per locale. */
-    currencyNames: Record<"USD" | "CNY", string>;
     priceOnRequest: string;
     /** Shown next to the number so the status can never be separated from it. */
     statusNote: {
@@ -54,9 +57,11 @@ export interface Dictionary {
     };
     /**
      * Shown beneath a converted hero price, restating it in the currency the
-     * seller actually quoted — the one the transaction settles in.
+     * ask is actually quoted in. Takes the currency name rather than hardcoding
+     * one — a hardcoded label silently contradicts itself the moment the ask
+     * changes currency.
      */
-    originalQuote: (formatted: string) => string;
+    originalQuote: (formatted: string, currencyLabel: string) => string;
     ctaPrimary: string;
     ctaSecondary: string;
     copied: string;
@@ -94,6 +99,13 @@ export interface Dictionary {
     /** Marks a row whose price came from the automatic feed, not a manual read. */
     autoTag: string;
     autoTagTitle: string;
+    /**
+     * Shown only when this domain is priced below every comparable. An
+     * unexplained gap that large reads as a mistake or a scam, so it is better
+     * to name the reason. Rendered conditionally — see Comparables.tsx.
+     */
+    lowPriceTitle: string;
+    lowPriceBody: string;
     staleWarning: string;
     provenanceTitle: string;
     provenanceBody: string;
@@ -144,7 +156,8 @@ export interface Dictionary {
     dataNote: string;
     fxNoteLive: (rate: string, date: string) => string;
     fxNoteFallback: (rate: string) => string;
-    currencyNote: string;
+    /** States the currency the ask is denominated in. Takes the name, not a constant. */
+    currencyNote: (currencyLabel: string) => string;
     copyright: string;
     noTracking: string;
   };
@@ -156,6 +169,8 @@ export interface Dictionary {
 }
 
 export const en: Dictionary = {
+  currencyNames: { USD: "USD", CNY: "CNY" },
+
   meta: {
     title: "argonmodel.com — premium domain for sale",
     description:
@@ -177,14 +192,14 @@ export const en: Dictionary = {
     subhead:
       "Two dictionary words — and since 30 September 2026, one specific meaning: Google's new frontier model is named Argon.",
     priceLabel: (currencyLabel) => `Asking price · ${currencyLabel}`,
-    currencyNames: { USD: "USD", CNY: "CNY" },
     priceOnRequest: "Price on request",
     statusNote: {
       tbd: "No public price — send an offer",
       indicative: "Indicative — subject to confirmation",
       firm: "Firm asking price",
     },
-    originalQuote: (formatted) => `Quoted in USD: ${formatted}`,
+    originalQuote: (formatted, currencyLabel) =>
+      `Quoted in ${currencyLabel}: ${formatted}`,
     ctaPrimary: "Email your offer",
     ctaSecondary: "Copy email address",
     copied: "Copied",
@@ -254,6 +269,9 @@ export const en: Dictionary = {
     autoTag: "auto",
     autoTagTitle:
       "Refreshed automatically from a public marketplace feed; the date shown is when it was last fetched.",
+    lowPriceTitle: "Why this one is priced below the rest",
+    lowPriceBody:
+      "It is a deliberate quick-sale price — not a valuation, and not a markdown from a higher ask. The figures above are other sellers' opening positions; this one is set to close. A low price here says nothing about the quality of the name, and it is the same number you will find on the public listing.",
     staleWarning:
       "Some prices below were last checked more than 30 days ago and may have changed.",
     provenanceTitle: "Where these numbers come from",
@@ -343,7 +361,7 @@ export const en: Dictionary = {
       {
         id: "ownership",
         q: "Are you the owner?",
-        a: "Yes. Note that the registrar's public WHOIS record for this domain is redacted, so WHOIS alone will not prove it. What is checkable right now: this page is served from the domain itself, so whoever publishes it controls the domain's DNS. The decisive check happens at the transfer — an escrow provider confirms the seller controls the name before releasing funds, and you can require that verification before committing anything.",
+        a: "Yes. The strongest check available is the public listing: this domain is offered through Aliyun's domain trading service, linked at the foot of this page, and a listing there is created only after the seller proves control of the domain. Two weaker signals are also visible — the registrar's WHOIS record is redacted so it proves nothing on its own, and this page being served from the domain shows only that its publisher controls the DNS. The decisive verification still happens at the transfer: escrow confirms the seller controls the name before releasing funds.",
       },
       {
         id: "whySelling",
@@ -380,7 +398,8 @@ export const en: Dictionary = {
       `CNY figures are converted at 1 USD = ${rate} CNY from open.er-api.com, last updated ${date}.`,
     fxNoteFallback: (rate) =>
       `CNY figures are converted at a fixed reference rate of 1 USD = ${rate} CNY. The live rate was unavailable when this page was last built.`,
-    currencyNote: "The transaction currency is USD.",
+    currencyNote: (currencyLabel) =>
+      `The asking price is denominated in ${currencyLabel}.`,
     copyright: "© 2026 · A private domain sale listing.",
     noTracking: "No cookies, no analytics, no third-party trackers.",
   },

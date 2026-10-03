@@ -174,6 +174,21 @@ export function Comparables({
   );
   const anyStale = rows.some((row) => row.stale);
 
+  /**
+   * The "why so cheap" note renders only while it is true: the subject is priced
+   * and sits below every priced comparable. Raise the price and it disappears on
+   * its own, so it can never become a stale claim.
+   */
+  const subjectRow = rows[0];
+  const comparableAmounts = priced
+    .filter((row) => !row.isSubject)
+    .map((row) => toDisplay(row.amount, row.amountCurrency));
+  const showLowPriceNote =
+    subjectRow.amount !== null &&
+    comparableAmounts.length > 0 &&
+    toDisplay(subjectRow.amount, subjectRow.amountCurrency) <
+      Math.min(...comparableAmounts);
+
   // With no prices entered yet there is nothing to compare, so the bars and the
   // summary tiles stay out of the way rather than rendering empty furniture.
   const showBars = priced.length >= 2 && maxAmount > 0;
@@ -402,6 +417,17 @@ export function Comparables({
             <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
             {dict.comparables.staleWarning}
           </p>
+        )}
+
+        {/* A gap this large, left unexplained, reads as a mistake or a scam —
+            so it gets named, right where the reader notices it. */}
+        {showLowPriceNote && (
+          <div className="mt-6 rounded-xl border border-border border-l-2 border-l-data bg-surface-2 p-5">
+            <p className="text-sm font-medium">{dict.comparables.lowPriceTitle}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
+              {dict.comparables.lowPriceBody}
+            </p>
+          </div>
         )}
 
         {/* Persistent, not a tooltip: the provenance of every number is part of

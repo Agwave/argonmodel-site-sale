@@ -8,6 +8,8 @@ import type { Dictionary } from "./en";
  * needs to be worded — the copy is adjusted and noted inline.
  */
 export const zh: Dictionary = {
+  currencyNames: { USD: "美元", CNY: "人民币" },
+
   meta: {
     title: "argonmodel.com — 精品域名出售",
     description:
@@ -29,14 +31,14 @@ export const zh: Dictionary = {
     subhead:
       "两个词典单词——自 2026 年 9 月 30 日起，它们有了一个明确的指向：Google 的新一代前沿模型名为 Argon。",
     priceLabel: (currencyLabel) => `报价 · ${currencyLabel}`,
-    currencyNames: { USD: "美元", CNY: "人民币" },
     priceOnRequest: "价格面议",
     statusNote: {
       tbd: "暂无公开报价 — 欢迎出价",
       indicative: "指示性价格 — 以最终确认为准",
       firm: "实价",
     },
-    originalQuote: (formatted) => `原始报价 ${formatted}（交易货币为美元）`,
+    originalQuote: (formatted, currencyLabel) =>
+      `原始报价 ${formatted}（以${currencyLabel}计价）`,
     ctaPrimary: "发送邮件出价",
     ctaSecondary: "复制邮箱地址",
     copied: "已复制",
@@ -94,6 +96,9 @@ export const zh: Dictionary = {
     checkedDaysAgo: (days) => `${days} 天前查证`,
     autoTag: "自动",
     autoTagTitle: "由公开的域名交易接口自动刷新，所标日期为最近一次拉取时间。",
+    lowPriceTitle: "为什么这个价格低于其他所有报价",
+    lowPriceBody:
+      "这是刻意的快速成交价——不是估值，也不是从更高要价下调的结果。上表中的数字是其他卖方的谈判起点，而这个价格是为了成交而设。价格低并不说明这个域名不好，而且它与公开挂牌页面上的数字完全一致。",
     staleWarning:
       "下表中有报价的查证时间已超过 30 天，可能已经发生变化。",
     provenanceTitle: "这些数字的来源",
@@ -190,7 +195,7 @@ export const zh: Dictionary = {
       {
         id: "ownership",
         q: "你是域名所有者吗？",
-        a: "是。需要说明的是：该域名在注册商处的公开 WHOIS 记录已脱敏，单凭 WHOIS 无法证明所有权。目前可核实的是——本页面正是由该域名提供服务，能发布这个页面的人就控制着该域名的 DNS。真正的决定性验证发生在过户环节：托管服务商会在放款前确认卖方确实控制该域名，你可以在投入任何款项之前要求完成这一步验证。",
+        a: "是。目前最有力的核实途径是公开的挂牌页面：本域名已在阿里云域名交易上架（链接见页脚），而该平台上架需先通过平台对域名控制权的验证。另有两个较弱的信号：该域名的公开 WHOIS 记录已脱敏，单凭它无法证明什么；本页面由该域名提供服务，也只能说明发布者控制着 DNS。决定性的验证仍发生在过户环节——托管方会在放款前确认卖方确实控制该域名。",
       },
       {
         id: "whySelling",
@@ -226,9 +231,9 @@ export const zh: Dictionary = {
       `人民币数字按 1 美元 = ${rate} 人民币换算，汇率来自 open.er-api.com，最后更新于 ${date}。`,
     fxNoteFallback: (rate) =>
       `人民币数字按固定参考汇率 1 美元 = ${rate} 人民币换算。本页上次构建时无法获取实时汇率。`,
-    // ZH intent: without this line a Chinese buyer may reasonably assume the
-    // CNY figure is the number they are agreeing to.
-    currencyNote: "交易货币为美元。",
+    // ZH intent: states the denomination explicitly so neither locale leaves the
+    // buyer guessing which currency they would be agreeing to.
+    currencyNote: (currencyLabel) => `报价以${currencyLabel}计价。`,
     copyright: "© 2026 · 本页为私人域名出售信息。",
     noTracking: "不使用 Cookie、不做统计、无第三方追踪。",
   },

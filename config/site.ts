@@ -12,12 +12,18 @@ export const site = {
   domain: "argonmodel.com",
 
   /**
-   * Optional: if you also list the domain on a marketplace, put the listing URL
-   * here. It renders as third-party proof of ownership, which is worth more to a
-   * buyer than anything the page claims about itself. Set to null to hide it.
+   * The public marketplace listing. This is the strongest ownership proof the
+   * page can offer — a listing exists only after the venue verifies the seller
+   * controls the domain — so it is linked from the footer and cited in the
+   * ownership FAQ. Set either to null to hide it.
+   *
+   * Keep `askingPrice` in `config/pricing.ts` in step with the listing: the page
+   * and the marketplace are two views of one offer, and a mismatch between them
+   * is the fastest way to lose a buyer's trust.
    */
-  marketplaceListingUrl: null as string | null,
-  marketplaceListingName: null as string | null,
+  marketplaceListingUrl:
+    "https://mi.aliyun.com/domain-detail?domainName=argonmodel.com" as string | null,
+  marketplaceListingName: "Aliyun Domain Trading" as string | null,
 
   /**
    * The recommended venue for the transaction, linked from the escrow step.

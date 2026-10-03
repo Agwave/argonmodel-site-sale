@@ -32,10 +32,15 @@ export type AskingPrice =
   | { mode: "indicative"; amount: number; currency: Currency }
   | { mode: "firm"; amount: number; currency: Currency };
 
+/**
+ * Amount and currency must match the live Aliyun listing exactly — the page and
+ * the marketplace are two views of one offer, and a mismatch between them is the
+ * fastest way to lose a buyer's trust.
+ */
 export const askingPrice: AskingPrice = {
   mode: "indicative",
   amount: 888,
-  currency: "USD",
+  currency: "CNY",
 };
 
 /** Whether a comparable is currently listed, or merely parked with no price. */
